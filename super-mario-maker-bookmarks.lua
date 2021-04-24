@@ -1,5 +1,6 @@
 dofile("table_show.lua")
 dofile("urlcode.lua")
+dofile("strict.lua")
 local urlparse = require("socket.url")
 local luasocket = require("socket") -- Used to get sub-second time
 local http = require("socket.http")
@@ -17,14 +18,26 @@ local abortgrab = false
 
 
 discovered_items = {}
-
-last_main_site_time = 0
-
+local last_main_site_time = 0
 
 if urlparse == nil or http == nil then
   io.stdout:write("socket not corrently installed.\n")
   io.stdout:flush()
   abortgrab = true
+end
+
+graph_out_file = io.open("graph_lua.dot", "w+")
+graph_out_file:write("digraph {")
+function wtg(src, dest)
+  if src == nil then
+    src = "Nil"
+  end
+  if dest == nil then
+    dest = "Nil"
+  end
+  graph_out_file:write('"' .. src .. '" -> "' .. dest .. '";}')
+  graph_out_file:seek("cur", -1)
+  graph_out_file:flush()
 end
 
 for ignore in io.open("ignore-list", "r"):lines() do
@@ -57,7 +70,7 @@ p_assert = function(v)
   end
 end
 
-do_debug = false
+do_debug = true
 print_debug = function(a)
     if do_debug then
         print(a)
@@ -65,57 +78,80 @@ print_debug = function(a)
 end
 print_debug("The grab script is running in debug mode. You should not see this in production.")
 
-allowed = function(url, parenturl)
-  -- Do not recurse to other item base URLs
+function is_on_targeted(url)
+  return string.match(url, "^https?://[^/]+%.aimix%-z%.com") ~= nil
+end
 
-  -- page-less e.g. "type=first_holder" have "force" set on check, so this will not block them
-  if string.match(url, "https?://supermariomakerbookmark%.nintendo%.net/profile/") and not string.match(url, "page=") then
-    username = string.match(url, "https?://supermariomakerbookmark%.nintendo%.net/profile/([^%?&]+)")
-    p_assert(string.match(username, "^[^/ ]+$"))
-    if not string.match(item_name_newline, username) then
-      discovered_items["user:" .. username] = true
+allowed = function(url, parenturl)
+  assert(parenturl ~= nil)
+  -- Backfeed different forums and reject
+  local function find_room(url)
+    if url == nil or not is_on_targeted(url) then
+      return nil
     end
+    local match = string.match(url, "%?room=([%w%-%_]+)")
+    if not match then
+      match = string.match(url, "&room=([%w%-%_]+)")
+    end
+    return match
+  end
+  local this_room = find_room(url)
+  local parent_room = find_room(parenturl)
+  if this_room ~= nil and parent_room ~= nil and this_room ~= parent_room then
+    -- TODO queue as multiiem
+    print("Would have queued " .. this_room .. " from " .. parent_room)
     return false
   end
-  if string.match(url, "https?://supermariomakerbookmark%.nintendo%.net/courses/") then
-    course_name = string.match(url, "https?://supermariomakerbookmark%.nintendo%.net/courses/([^%?&/]+)")
-    p_assert(string.match(course_name, "^[A-F0-9][A-F0-9][A-F0-9][A-F0-9]%-[A-F0-9][A-F0-9][A-F0-9][A-F0-9]%-[A-F0-9][A-F0-9][A-F0-9][A-F0-9]%-[A-F0-9][A-F0-9][A-F0-9][A-F0-9]$"))
-    if not string.match(item_name_newline, course_name) then
-      discovered_items["course:" .. course_name] = true
-    end
+
+  -- Reject social media share buttons
+  if string.match(url, "^https?://twitter%.com/intent/")
+    or string.match(url, "^https?://platform%.twitter%.com/")
+    or string.match(url, "^https?://b%.hatena%.ne%.jp/entry/")
+    or string.match(url, "^https?://www%.facebook%.com/plugins/like%.php") then
     return false
   end
-  
-  -- Only get course images on course pages, and profile images on profile pages
-  if string.match(url, "^https?://dypqnhofrd2x2%.cloudfront%.net/.*jpg$") then -- Course images
-    p_assert(parenturl)
-    if string.match(parenturl, "^https?://supermariomakerbookmark%.nintendo%.net/profile/") then
-      print_debug("Rejecting " .. url .. " because it came from a profile page")
-      return false
-    end
-  elseif string.match(url, "^https?://mii%-secure%.cdn%.nintendo%.net/.*png$") then -- Profile images
-    p_assert(parenturl)
-    if not string.match(parenturl, "^https?://mii%-secure%.cdn%.nintendo%.net/.*png$") then
-      print_debug("Rejecting " .. url .. " because it did not come from another image.")
-      return false
-    end
-  end
-  
-  
-  -- General restrictions
-  if string.match(url, "^https?://supermariomakerbookmark%.nintendo%.net/[^/]*$")
-    or string.match(url, "^https?://www%.googletagmanager%.com")
-    or string.match(url, "^https?://supermariomakerbookmark%.nintendo%.net/users/") -- Auth
-    or string.match(url, "^https?://supermariomakerbookmark%.nintendo%.net/assets/") -- Static
-    or string.match(url, "^https?://www%.esrb%.org/") then
+
+  -- Ads
+  if string.match(url, "^https?://[^/]+%.valuecommerce%.com/") then
     return false
   end
-  
-  -- b64 that gets picked up somewhere
-  if string.match(url, "==$") then
+
+
+
+  -- Reject new/edit/delete/admin-action/reply pages
+  if string.match(url, "^https?://[^/]+%.aimix%-z%.com/mtptwrite%.cgi")
+      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/mtpt%.cgi.*&quo=[0-9]+")-- Reply (GT: "quote")
+      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/mtpt%.cgi.*&mode=form")
+      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/mtpt%.cgi.*&mode=admin")
+      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/mtptwrite%.cgi.*&mode=mente") -- Edit/delete post
+    -- gbbs
+      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/gbbs%.cgi.*&mode=enter") -- Admin
+      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/gbbs%.cgi.*&mode=uedit")
+      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/gbbs%.cgi.*&mode=howto&page=") -- This will break some links, but
+    -- won't really ignore any information (the "page" parameter is so that a "Back" button can work)
+
+  then
     return false
   end
-  
+
+  -- Board not found error
+  if string.match(url, "https?://[^/]+%.aimix%-z%.com/error0015%.html") then
+    return false
+  end
+
+  -- Misc
+  if string.match(url, "^https?://[^/]+%.aimix%-z%.com/view%-source:")
+  or string.match(url, "^https?://[^/]+%.aimix%-z%.com/counter%.cgi")
+  or string.match(url, "^https?://[^/]+%.aimix%-z%.com/docs/")
+  or string.match(url, "^https?://purl%.org/")
+  or string.match(url, "^https?://www%.w3%.org/")
+  or string.match(url, "rdf:resource=") -- As usual, garbage extracted from somewhere
+  or string.match(url, "rdf:about=")
+  then
+    return false
+  end
+
+
   local tested = {}
   for s in string.gmatch(url, "([^/]+)") do
     if tested[s] == nil then
@@ -126,9 +162,17 @@ allowed = function(url, parenturl)
     end
     tested[s] = tested[s] + 1
   end
-      
+
+  -- Accept directly-linked external URLs; external links from external links
+  if not is_on_targeted(url) then
+    --print_debug("Not IOT " .. url .. " " .. parenturl)
+    return (parenturl ~= nil) and (is_on_targeted(parenturl) ~= false)
+  end
+
+  --print_debug("Allowed true " .. url .. " " .. parenturl)
   return true
 end
+
 
 wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_parsed, iri, verdict, reason)
   local url = urlpos["url"]["url"]
@@ -137,6 +181,7 @@ wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_pars
   end
   if allowed(url, parent["url"]) then
     addedtolist[url] = true
+    wtg(parent["url"], url)
     return true
   end
 
@@ -172,11 +217,11 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       return checknewurl(string.gsub(newurl, "\\[uU]002[fF]", "/"))
     end
     if string.match(newurl, "^https?:////") then
-      check(string.gsub(newurl, ":////", "://"))
+      check((string.gsub(newurl, ":////", "://")))
     elseif string.match(newurl, "^https?://") then
       check(newurl)
     elseif string.match(newurl, "^https?:\\/\\?/") then
-      check(string.gsub(newurl, "\\", ""))
+      check((string.gsub(newurl, "\\", "")))
     elseif string.match(newurl, "^\\/") then
       checknewurl(string.gsub(newurl, "\\", ""))
     elseif string.match(newurl, "^//") then
@@ -215,34 +260,6 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       html = read_file(file)
     end
   end
-  
-  
-  if string.match(url, "https?://supermariomakerbookmark%.nintendo%.net/profile/[^/%?]+$") and status_code == 200 then
-    check(url .. "?type=posted", true)
-    check(url .. "?type=liked", true)
-    check(url .. "?type=fastest_holder", true)
-    check(url .. "?type=first_holder", true)
-    
-    load_html()
-    
-    p_assert(string.match(html, "Play History"))
-    
-    profile_image = string.match(html, '<img class="mii" src="(https?://mii%-secure%.cdn%.nintendo%.net/[^"]*png)" alt="[^>]+" />')
-    p_assert(profile_image)
-    check(profile_image, true)
-  end
-  
-  if string.match(url, "https?://supermariomakerbookmark%.nintendo%.net/course/") and status_code == 200 then
-    load_html()
-    p_assert(string.match(html, "Course Tag"))
-  end
-  
-  -- Queue alternate profile picture types
-  if string.match(url, "https?://mii%-secure%.cdn%.nintendo%.net/.*png$") then
-    check((string.gsub(url, "normal", "like")))
-    check((string.gsub(url, "like", "normal")))
-    print_debug("Queuing alternate face from " .. url)
-  end
 
   
 
@@ -268,6 +285,9 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     end
   end
 
+  for _, nurl in pairs(urls) do
+    wtg(url, nurl["url"])
+  end
   return urls
 end
 
@@ -277,11 +297,13 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   url_count = url_count + 1
   io.stdout:write(url_count .. "=" .. status_code .. " " .. url["url"] .. "  \n")
   io.stdout:flush()
+  print_debug(err)
+
 
   if status_code >= 300 and status_code <= 399 then
     local newloc = urlparse.absolute(url["url"], http_stat["newloc"])
     if downloaded[newloc] == true or addedtolist[newloc] == true
-      or not allowed(newloc, url["url"]) then
+            or not allowed(newloc, url["url"]) then
       tries = 0
       return wget.actions.EXIT
     end
@@ -296,47 +318,43 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
     io.stdout:flush()
     return wget.actions.ABORT
   end
-  
-  
-  if status_code == 403 and (string.match(url["url"], "^https?://supermariomakerbookmark%.nintendo%.net/")) then
-    print("You have been banned from the Super Mario Maker website. Switch your worker to another project, and wait a few hours to be unbanned.")
-    print("This should not happen if you are running one concurrency per IP address. If it does, tell OrIdow6 in the project channel.")
-    os.execute("sleep " .. 60) -- Do not spam the tracker (or the site)
-    return wget.actions.ABORT
-  end
-  
-  --
-  
-  if string.match(url["url"], "^https?://supermariomakerbookmark%.nintendo%.net") then
-    -- Sleep for up to 2s average
-    local now_t = luasocket.gettime()
-    local makeup_time = 2 - (now_t - last_main_site_time)
-    if makeup_time > 0 then
-      print_debug("Sleeping for main site " .. makeup_time)
-      os.execute("sleep " .. makeup_time)
-    end
-    last_main_site_time = now_t
-  end
-  
+
   --
 
   
   local do_retry = false
   local maxtries = 12
   local url_is_essential = false
-  
-  if status_code == 0
-    or (status_code > 400 and status_code ~= 404) then
+
+  -- Whitelist instead of blacklist status codes
+  if status_code ~= 200 and status_code ~= 404 and not (status_code >= 300 and status_code <= 399) then
     io.stdout:write("Server returned " .. http_stat.statcode .. " (" .. err .. "). Sleeping.\n")
     io.stdout:flush()
     do_retry = true
   end
-  
-  --url_is_essential = string.match(url, "https?://supermariomakerbookmark%.nintendo%.net/profile/[^\?]+$")
-  -- or string.match(url, "https?://supermariomakerbookmark%.nintendo%.net/courses/")
-  url_is_essential = true -- For now, all URLS, including CDN urls, are considered such
-  
-  
+
+  if is_on_targeted(url["url"]) then
+    -- Sleep for up to 2s average
+    local now_t = luasocket.gettime()
+    local makeup_time = 10 - (now_t - last_main_site_time)
+    if makeup_time > 0 then
+      makeup_time = makeup_time + math.random() * 3
+      print_debug("Sleeping for main site " .. makeup_time)
+      os.execute("sleep " .. makeup_time)
+    end
+    last_main_site_time = now_t
+  end
+
+  -- Essential URLs are on site
+  if is_on_targeted(url["url"]) then
+    url_is_essential = true
+    maxtries = 12
+  else
+    url_is_essential = false
+    maxtries = 4
+  end
+
+
   if do_retry then
     if tries >= maxtries then
       io.stdout:write("I give up...\n")
@@ -360,7 +378,7 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
     os.execute("sleep " .. sleep_time)
     return wget.actions.CONTINUE
   end
-  
+
   tries = 0
   return wget.actions.NOTHING
 end
@@ -385,7 +403,8 @@ wget.callbacks.finish = function(start_time, end_time, wall_time, numurls, total
       local tries = 0
       while tries < 10 do
         local body, code, headers, status = http.request(
-          "http://blackbird-amqp.meo.ws:23038/whatever/",
+          --"http://blackbird.arpa.li:23038/whatever/" -- New address - #noanswers 2021-04-20Z
+                "http://example.com",
           to_send
         )
         if code == 200 or code == 409 then

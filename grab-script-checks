@@ -1,0 +1,65 @@
+format 0
+
+[[]]
+successful
+not regex .*view-source:.*
+not regex .{300,} # Huge URLs, incl. big JS libraries
+
+######################################################
+# gbbs
+
+
+[gbbs:www/srgmcgi2]
+not exact http://www.aimix-z.com/gbbs.cgi?room=srgmcgi2&mode=uedit&no=1779 # "Edit post" page
+some exact http://www.aimix-z.com/gbbs.cgi?room=srgmcgi2&mode=linkss&trans=https%3a%2f%2finfo%2dgeocities%2eyahoo%2eco%2ejp%2fp%2fclose%2findex%2ehtml
+some exact https://info-geocities.yahoo.co.jp/p/close/index.html
+# Images from page=40
+some exact http://www.aimix-z.com/gbbsimg/srgmcgi2/1633.jpg
+some exact http://www.aimix-z.com/gbbsimg/srgmcgi2/1633_2.jpg # Thumbnail of the above
+not exact http://www.aimix-z.com/gbbs.cgi?room=srgmcgi2&mode=enter # Admin page
+# Diff display mode
+some exact http://www.aimix-z.com/gbbs.cgi?room=srgmcgi2&mode=th
+some exact http://www.aimix-z.com/gbbsimg/srgmcgi2/1805_2.jpg
+some exact http://www.aimix-z.com/gbbs.cgi?room=srgmcgi2&mode=th&page=42
+some exact http://www.aimix-z.com/gbbsimg/srgmcgi2/1616_2.jpg
+some exact http://www.aimix-z.com/gbbsimg/srgmcgi2/1616.jpg
+some exact http://www.aimix-z.com/gbbs.cgi?page=42&viewcont=th&room=srgmcgi2&mode=res&no=1616
+
+[gbbs:www/shuichif]
+some exact http://www.aimix-z.com/gbbs.cgi?page=&viewcont=th&room=shuichif&mode=res&no=481
+some exact http://www.aimix-z.com/photovw.cgi?room=shuichif&image=482.jpg
+some exact http://www.aimix-z.com/gbbsimg/shuichif/482.jpg
+some exact http://www.aimix-z.com/gbbsimg/shuichif/myfile/1-2.jpg
+
+[dummy]
+
+#################################
+# mtpt
+
+[mtpt:www/matukiti]
+some exact http://www.aimix-z.com/mtpt.cgi?room=matukiti&mode=view&no=7
+some exact http://www.aimix-z.com/mtpt.cgi?room=matukiti&mode=view&no=9
+some exact http://www.aimix-z.com/mtpt.cgi?room=matukiti&mode=view&no=11
+some exact http://www.aimix-z.com/mtpt.cgi?room=matukiti&mode=view&no=10
+some exact http://www.aimix-z.com/mtpt.cgi?room=matukiti&mode=view&no=13
+some exact http://www.aimix-z.com/mtpt.cgi?room=matukiti&mode=view&no=8
+some exact http://www.aimix-z.com/mtpt.cgi?room=matukiti&mode=view&no=12
+some exact http://home.e-catv.ne.jp/baseball/index.html
+minrequests 10
+maxrequests 30
+
+# Not found
+[mtpt:bbs1/staff11]
+some exact http://bbs1.aimix-z.com/mtpt.cgi?room=staff11
+minrequests 1
+maxrequests 5
+not exact http://bbs1.aimix-z.com/error0015.html
+
+# Pagination, in-body external links
+#[mtpt:bbs4/tacotaco]
+#some exact http://bbs4.aimix-z.com/mtpt.cgi?room=tacotaco&mode=linkss&trans=http%3a%2f%2fwww%2egigafile%2enu%2fv3%2f
+#some exact https://gigafile.nu/
+#some exact http://bbs4.aimix-z.com/mtpt.cgi?room=tacotaco&mode=linkss&trans=http%3a%2f%2f8%2egigafile%2enu%2f%3fb5c57d6effc31bf21557e4eb5c5759c93%2d0813
+#some exact http://8.gigafile.nu/?b5c57d6effc31bf21557e4eb5c5759c93-0813
+#minrequests 10
+#maxrequests 200

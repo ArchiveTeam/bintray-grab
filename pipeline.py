@@ -37,7 +37,7 @@ if StrictVersion(seesaw.__version__) < StrictVersion('0.8.5'):
 WGET_AT = find_executable(
     'Wget+AT',
     [
-        'GNU Wget 1.20.3-at.20210212.02',
+        'GNU Wget 1.20.3-at.20210410.01'
     ],
     [
         './wget-at',
@@ -55,7 +55,7 @@ if not WGET_AT:
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
 VERSION = '20210324.01'
-USER_AGENT = 'Archive Team (ircs://irc.hackint.org#nintendone https://webirc.hackint.org/#irc://irc.hackint.org/#nintendone)'
+USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 TRACKER_ID = 'super-mario-maker-bookmarks'
 #TRACKER_HOST = 'legacy-api.arpa.li'
 TRACKER_HOST = "legacy-api.arpa.li"
@@ -203,14 +203,17 @@ class WgetArgs(object):
             wget_args.extend(['--warc-header', 'x-wget-at-project-item-name: '+item_name])
             wget_args.append('item-name://' + item_name)
             item_type, item_value = item_name.split(':', 1)
-            if item_type == "user":
-                wget_args.extend(['--warc-header', 'super-mario-world-bookmarks-user: '+item_value])
-                wget_args.append('https://supermariomakerbookmark.nintendo.net/profile/' + item_value)
-            elif item_type == "course":
-                wget_args.extend(['--warc-header', 'super-mario-world-bookmarks-course: ' + item_value])
-                wget_args.append('https://supermariomakerbookmark.nintendo.net/courses/' + item_value)
+            if item_type == "mtpt":
+                wget_args.extend(['--warc-header', 'aimix-z-mtpt: ' + item_value])
+                [host, name] = item_value.split("/")
+                wget_args.append(f"http://{host}.aimix-z.com/mtpt.cgi?room={name}")
+            elif item_type == "gbbs":
+                wget_args.extend(['--warc-header', 'aimix-z-gbbs: ' + item_value])
+                [host, name] = item_value.split("/")
+                wget_args.append(f"http://{host}.aimix-z.com/gbbs.cgi?room={name}")
             else:
                 raise ValueError('item_type not supported.')
+        # TODO remove names of unsupported types
 
         if 'bind_address' in globals():
             wget_args.extend(['--bind-address', globals()['bind_address']])
@@ -248,6 +251,7 @@ pipeline = Pipeline(
             'item_dir': ItemValue('item_dir'),
             'warc_file_base': ItemValue('warc_file_base'),
             'item_name_newline': ItemValue('item_name_newline'),
+            'http_proxy': 'http://127.0.0.1:8082/' # DEBUG
         }
     ),
     PrepareStatsForTracker(
