@@ -395,6 +395,13 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   io.stdout:write(url_count .. "=" .. status_code .. " " .. url["url"] .. "  \n")
   io.stdout:flush()
 
+  -- file: items with params after the path
+  local good_url = string.match(url["url"], "^(https?://[^/]+%.bintray%.com/[^?]+)%?.*expiry=16.*signature=")
+  if status_code == 403 and good_url ~= nil then
+    discovered_items[good_url] = true
+    return wget.actions.EXIT
+  end
+
 
   if status_code >= 300 and status_code <= 399 then
     local newloc = urlparse.absolute(url["url"], http_stat["newloc"])
