@@ -323,7 +323,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
   end
 
   -- Extract nothing from the files themselves on the download site
-  if current_item_type == "user" and dl_or_custom(url) and string.match(url, "^https?://[^/]%.bintray%.com/.*[^/]$") then
+  if current_item_type == "user" and dl_or_custom(url) and string.match(url, "^https?://[^/]+%.bintray%.com/.*[^/]$") then
     return {}
   end
 
@@ -333,7 +333,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     check("https://bintray.com/" .. current_item_value .. "/repositoriesTemplate", true)
     check("https://bintray.com/" .. current_item_value .. "/repositoriesTemplate?iterator=true", true)
 
-    if dl_or_custom(url) then
+    if dl_or_custom(url) and string.match(url, "/$") then
       load_html()
       -- Queue URLs without :
       print_debug("Queueing dl urls")
