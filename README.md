@@ -2,9 +2,6 @@ bintray-grab
 =============
 This is a script you can run to grab the Bintray site.
 
-
-More information about the archiving project can be found on the ArchiveTeam wiki: [Super Mario Maker Bookmark](https://wiki.archiveteam.org/index.php/Super_Mario_Maker_Bookmark)
-
 Setup instructions
 =========================
 
