@@ -170,6 +170,9 @@ allowed = function(url, parenturl)
     if user == nil then
       user = string.match(url, "^https?://[^/]+%.bintray%.com/package/[^/]+/([^/%?#]+)")
     end
+    if user == nil then
+      user = string.match(url, "^https?://([^/]+)%.bintray%.com/")
+    end
 
     if user == current_item_value then
       --print_debug("Strict CIV match " .. url)
