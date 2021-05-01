@@ -133,8 +133,8 @@ class MoveFiles(SimpleTask):
         SimpleTask.__init__(self, 'MoveFiles')
 
     def process(self, item):
-        os.rename('%(item_dir)s/%(warc_file_base)s.warc.gz' % item,
-            '%(data_dir)s/%(warc_file_base)s.warc.gz' % item)
+        os.rename('%(item_dir)s/%(warc_file_base)s.warc.zst' % item,
+            '%(data_dir)s/%(warc_file_base)s.warc.zst' % item)
         os.rename('%(item_dir)s/%(warc_file_base)s_data.txt' % item,
             '%(data_dir)s/%(warc_file_base)s_data.txt' % item)
 
@@ -199,21 +199,20 @@ class WgetArgs(object):
         item_names = item['item_name'].split('\0')
         item['item_name_newline'] = item['item_name'].replace('\0', '\n')
 
+        item_names_to_submit = item_names.copy()
         for item_name in item_names:
+            assert item_name not in {"user:account", "user:assets"}, "Doing this out of caution"
             wget_args.extend(['--warc-header', 'x-wget-at-project-item-name: '+item_name])
             wget_args.append('item-name://' + item_name)
             item_type, item_value = item_name.split(':', 1)
-            if item_type == "mtpt":
-                wget_args.extend(['--warc-header', 'aimix-z-mtpt: ' + item_value])
-                [host, name] = item_value.split("/")
-                wget_args.append(f"http://{host}.aimix-z.com/mtpt.cgi?room={name}")
-            elif item_type == "gbbs":
-                wget_args.extend(['--warc-header', 'aimix-z-gbbs: ' + item_value])
-                [host, name] = item_value.split("/")
-                wget_args.append(f"http://{host}.aimix-z.com/gbbs.cgi?room={name}")
+            if item_type == "user":
+                wget_args.extend(['--warc-header', 'bintray-user: ' + item_value])
+                wget_args.append(f'https://bintray.com/{item_value}')
+                wget_args.append(f'https://bintray.com/{item_value}/')
+            elif item_type == "url":
+                raise Exception("Encountered a file: item. Maybe it's safe to remove from item_name? Ask arkiver?")
             else:
                 raise ValueError('item_type not supported.')
-        # TODO remove names of unsupported types
 
         if 'bind_address' in globals():
             wget_args.extend(['--bind-address', globals()['bind_address']])
@@ -251,7 +250,6 @@ pipeline = Pipeline(
             'item_dir': ItemValue('item_dir'),
             'warc_file_base': ItemValue('warc_file_base'),
             'item_name_newline': ItemValue('item_name_newline'),
-            'http_proxy': 'http://127.0.0.1:8082/' # DEBUG
         }
     ),
     PrepareStatsForTracker(

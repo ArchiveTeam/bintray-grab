@@ -19,25 +19,59 @@ local abortgrab = false
 
 discovered_items = {}
 local last_main_site_time = 0
+local url_sources = {}
+local current_item_type = nil
+local current_item_value = nil
+
+set_new_item = function(url)
+  -- 3 stages to my version of this:
+  -- - url_sources (shows whence URLs were derived)
+  -- - Explicit set based on URL
+  -- - Else nil (i.e. unknown or do not care)
+
+  -- Previous
+  if url_sources[url] ~= nil then
+    current_item_type = url_sources[url]["type"]
+    current_item_value = url_sources[url]["value"]
+    print_debug("Setting current item to " .. current_item_type .. ":" .. current_item_value .. " based on sources table")
+    return
+  end
+
+  -- Explicitly setting
+  local user = string.match(url, "^https?://bintray%.com/([^/%?#]+)")
+  if user ~= nil and user ~= "user" then -- There is a pseudo-user called user, which owns repos, but is also used
+    -- as a path component of UI endpoints.
+    current_item_type = "user"
+    current_item_value = user
+    print_debug("Setting current item to user:" .. user .. " based on URL inference")
+    return
+  end
+
+  -- Else
+  print_debug("Current item fell through")
+  current_item_value = nil
+  current_item_type = nil
+end
+
+set_derived_url = function(dest)
+  if url_sources[dest] == nil then
+    print_debug("Derived " .. dest)
+    url_sources[dest] = {type=current_item_type, value=current_item_value}
+  else
+    if url_sources[dest]["type"] ~= current_item_type
+      or url_sources[dest]["value"] ~= current_item_value then
+      print(current_item_type .. ":" .. current_item_value .. " wants " .. dest)
+      print("but it is already claimed by " .. url_sources[dest]["type"] .. ":" .. url_sources[dest]["value"])
+      assert(false)
+    end
+  end
+end
+
 
 if urlparse == nil or http == nil then
   io.stdout:write("socket not corrently installed.\n")
   io.stdout:flush()
   abortgrab = true
-end
-
-graph_out_file = io.open("graph_lua.dot", "w+")
-graph_out_file:write("digraph {")
-function wtg(src, dest)
-  if src == nil then
-    src = "Nil"
-  end
-  if dest == nil then
-    dest = "Nil"
-  end
-  graph_out_file:write('"' .. src .. '" -> "' .. dest .. '";}')
-  graph_out_file:seek("cur", -1)
-  graph_out_file:flush()
 end
 
 for ignore in io.open("ignore-list", "r"):lines() do
@@ -76,81 +110,79 @@ print_debug = function(a)
         print(a)
     end
 end
-print_debug("The grab script is running in debug mode. You should not see this in production.")
+print_debug("This grab script is running in debug mode. You should not see this in production.")
 
-function is_on_targeted(url)
-  return string.match(url, "^https?://[^/]+%.aimix%-z%.com") ~= nil
-end
 
 allowed = function(url, parenturl)
   assert(parenturl ~= nil)
-  -- Backfeed different forums and reject
-  local function find_room(url)
-    if url == nil or not is_on_targeted(url) then
-      return nil
-    end
-    local match = string.match(url, "%?room=([%w%-%_]+)")
-    if not match then
-      match = string.match(url, "&room=([%w%-%_]+)")
-    end
-    return match
-  end
-  local this_room = find_room(url)
-  local parent_room = find_room(parenturl)
-  if this_room ~= nil and parent_room ~= nil and this_room ~= parent_room then
-    -- TODO queue as multiiem
-    print("Would have queued " .. this_room .. " from " .. parent_room)
+
+  -- For speed/my sanity during testing, don't get alternative sorted orders
+  if string.match(url, "^https?://[^/]*%.?bintray%.com/.+order=asc&")
+    or string.match(url, "^https?://[^/]*%.?bintray%.com/.+order=desc&") then
+    --print_debug("Rejected sorted index " .. url)
     return false
   end
 
-  -- Reject social media share buttons
-  if string.match(url, "^https?://twitter%.com/intent/")
-    or string.match(url, "^https?://platform%.twitter%.com/")
-    or string.match(url, "^https?://b%.hatena%.ne%.jp/entry/")
-    or string.match(url, "^https?://www%.facebook%.com/plugins/like%.php") then
+  -- Reject colon URLs on dl.
+  if string.match(url, "^https?://dl%.bintray%.com/.+/%:[^/]+/?$") then
+    --print_debug("Rejecting for colon " .. url)
     return false
   end
 
-  -- Ads
-  if string.match(url, "^https?://[^/]+%.valuecommerce%.com/") then
-    return false
-  end
-
-
-
-  -- Reject new/edit/delete/admin-action/reply pages
-  if string.match(url, "^https?://[^/]+%.aimix%-z%.com/mtptwrite%.cgi")
-      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/mtpt%.cgi.*&quo=[0-9]+")-- Reply (GT: "quote")
-      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/mtpt%.cgi.*&mode=form")
-      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/mtpt%.cgi.*&mode=admin")
-      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/mtptwrite%.cgi.*&mode=mente") -- Edit/delete post
-    -- gbbs
-      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/gbbs%.cgi.*&mode=enter") -- Admin
-      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/gbbs%.cgi.*&mode=uedit")
-      or string.match(url, "^https?://[^/]+%.aimix%-z%.com/gbbs%.cgi.*&mode=howto&page=") -- This will break some links, but
-    -- won't really ignore any information (the "page" parameter is so that a "Back" button can work)
-
+  -- Other
+  if string.match(url, "^https?://[^/]*%.?bintray%.com/.*/reportLicense") -- Redirects to login
+    or string.match(url, "^https?://[^/]*%.?bintray%.com/.*/edit") -- Redirects to login
+    or string.match(url, "^https?://[^/]*%.?bintray%.com/.*/%?versionPath=") -- TODO remove for production? Seems harmless besides taking time
+    or string.match(url, "^https?://[^/]*%.?bintray%.com/login%?")
   then
+    --print_debug("Rejected for other " .. url)
     return false
   end
 
-  -- Board not found error
-  if string.match(url, "https?://[^/]+%.aimix%-z%.com/error0015%.html") then
-    return false
+
+
+  if (string.match(url, "^https?://[^/]+%.bintray%.com/") or string.match(url, "^https?://bintray%.com/"))
+          and current_item_type == "user" then
+    --print_debug("User path match on " .. url)
+    -- Experimental: More lenient (i.e. arkiver-style) URL-matching; leave rest in for discovery
+    for test in string.gmatch(url, "[^/]+") do
+      if test == current_item_value then
+        --print_debug("Lenient true " .. url)
+        return true
+      end
+    end
+
+    local user = string.match(url, "^https?://bintray%.com/([^/%?#]+)")
+    if user == nil then
+      user = string.match(url, "^https?://bintray%.com/package/[^/]+/([^/%?#]+)")
+    end
+    if user == nil then
+      user = string.match(url, "^https?://[^/]+%.bintray%.com/([^/%?#]+)") -- will also catch dl.
+    end
+    if user == nil then
+      user = string.match(url, "^https?://[^/]+%.bintray%.com/package/[^/]+/([^/%?#]+)")
+    end
+
+    if user == current_item_value then
+      --print_debug("Strict CIV match " .. url)
+      return true
+    else
+      if user ~= nil and string.match(user, "^[a-zA-Z0-9%-_]+$")
+              and user ~= "assets" and user ~= "payment" and user ~= "login"
+              and user ~= "signup" and user ~= "package" and user ~= "docs"
+              and user ~= "account" and user ~= "search" and user ~= "bintray-views" and user ~= "repo" then
+        local item = "user:" .. user
+        if discovered_items[item] == nil then
+          print_debug("Add " .. item .. " for discovery")
+          discovered_items[item] = true
+        end
+      end
+      --print_debug("Strict CIV mismatch " .. url)
+      return false
+    end
   end
 
-  -- Misc
-  if string.match(url, "^https?://[^/]+%.aimix%-z%.com/view%-source:")
-  or string.match(url, "^https?://[^/]+%.aimix%-z%.com/counter%.cgi")
-  or string.match(url, "^https?://[^/]+%.aimix%-z%.com/docs/")
-  or string.match(url, "^https?://purl%.org/")
-  or string.match(url, "^https?://www%.w3%.org/")
-  or string.match(url, "rdf:resource=") -- As usual, garbage extracted from somewhere
-  or string.match(url, "rdf:about=")
-  then
-    return false
-  end
-
+  -- TODO to prevent user:account, make sure general comes before backfeed intake
 
   local tested = {}
   for s in string.gmatch(url, "([^/]+)") do
@@ -163,14 +195,25 @@ allowed = function(url, parenturl)
     tested[s] = tested[s] + 1
   end
 
-  -- Accept directly-linked external URLs; external links from external links
-  if not is_on_targeted(url) then
-    --print_debug("Not IOT " .. url .. " " .. parenturl)
-    return (parenturl ~= nil) and (is_on_targeted(parenturl) ~= false)
-  end
+    if string.match(url, "^https?://[^/]+%.bintray%.com/")
+            or string.match(url, "^https?://bintray%.com/")
+            or string.match(url, "https?://secure%.gravatar%.com/avatar/")
+            or string.match(url, "https?://bintray[^/]+%.amazonaws%.com/") then
+      return true
+    else
+      return false
+    end
+  --[[
+    if current_item_type == "user" then
+      return string.match(url, "^https?://bintray%.com/([^/]+)") == current_item_value
+    elseif current_item_type == nil then
+      return false
+    else
+      assert(false, "Bad item type in match(???)")
+    end
+  end]]
 
-  --print_debug("Allowed true " .. url .. " " .. parenturl)
-  return true
+  assert(false, "This segment should not be reachable")
 end
 
 
@@ -181,7 +224,7 @@ wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_pars
   end
   if allowed(url, parent["url"]) then
     addedtolist[url] = true
-    wtg(parent["url"], url)
+    set_derived_url(url)
     return true
   end
 
@@ -203,16 +246,21 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     url_ = string.match(url_, "^(.-)%s*$")
     url_ = string.match(url_, "^(.-)%??$")
     url_ = string.match(url_, "^(.-)&?$")
-    url_ = string.match(url_, "^(.-)/?$")
+    -- url_ = string.match(url_, "^(.-)/?$") # Breaks dl.
     if (downloaded[url_] ~= true and addedtolist[url_] ~= true)
       and (allowed(url_, origurl) or force) then
       table.insert(urls, { url=url_ })
+      set_derived_url(url_)
       addedtolist[url_] = true
       addedtolist[url] = true
     end
   end
 
   local function checknewurl(newurl)
+    -- Being caused to fail by a recursive call on "../"
+    if not newurl then
+      return
+    end
     if string.match(newurl, "\\[uU]002[fF]") then
       return checknewurl(string.gsub(newurl, "\\[uU]002[fF]", "/"))
     end
@@ -254,13 +302,37 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       check(urlparse.absolute(url, "/" .. newurl))
     end
   end
-  
+
+  html = nil
   local function load_html()
     if html == nil then
       html = read_file(file)
     end
   end
 
+  -- Extract nothing from the files themselves on the download site
+  if current_item_type == "user" and string.match(url, "^https?://dl%.bintray%.com/.*[^/]$") then
+    return {}
+  end
+
+
+  if current_item_type == "user" then
+    check("https://bintray.com/user/subjectNotificationsJson?username=" .. current_item_value, true)
+    check("https://bintray.com/" .. current_item_value .. "/repositoriesTemplate", true)
+    check("https://bintray.com/" .. current_item_value .. "/repositoriesTemplate?iterator=true", true)
+
+    if string.match(url, "^https?://dl%.bintray%.com/.*/$") then
+      load_html()
+      -- Queue URLs without :
+      print_debug("Queueing dl urls")
+      for newurl in string.gmatch(html, 'href=":?([^:"][^"]+)"') do
+        newurl = urlparse.absolute(url, newurl)
+        print_debug("Newurl is " .. newurl)
+        check(newurl)
+        print_debug("Queue " .. newurl)
+      end
+    end
+  end
   
 
   if status_code == 200 and not (string.match(url, "jpe?g$") or string.match(url, "png$")) then
@@ -285,9 +357,6 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     end
   end
 
-  for _, nurl in pairs(urls) do
-    wtg(url, nurl["url"])
-  end
   return urls
 end
 
@@ -297,15 +366,20 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   url_count = url_count + 1
   io.stdout:write(url_count .. "=" .. status_code .. " " .. url["url"] .. "  \n")
   io.stdout:flush()
-  print_debug(err)
 
 
   if status_code >= 300 and status_code <= 399 then
     local newloc = urlparse.absolute(url["url"], http_stat["newloc"])
+    if string.match(newloc, "https?://[a-z0-9]+%.cloudfront%.net") then -- TODO file should pass
+      discovered_items["file:" .. url["url"]] = true
+      return wget.actions.EXIT
+    end
     if downloaded[newloc] == true or addedtolist[newloc] == true
             or not allowed(newloc, url["url"]) then
       tries = 0
       return wget.actions.EXIT
+    else
+      set_derived_url(newloc)
     end
   end
 
@@ -333,26 +407,8 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
     do_retry = true
   end
 
-  if is_on_targeted(url["url"]) then
-    -- Sleep for up to 2s average
-    local now_t = luasocket.gettime()
-    local makeup_time = 10 - (now_t - last_main_site_time)
-    if makeup_time > 0 then
-      makeup_time = makeup_time + math.random() * 3
-      print_debug("Sleeping for main site " .. makeup_time)
-      os.execute("sleep " .. makeup_time)
-    end
-    last_main_site_time = now_t
-  end
-
-  -- Essential URLs are on site
-  if is_on_targeted(url["url"]) then
-    url_is_essential = true
-    maxtries = 12
-  else
-    url_is_essential = false
-    maxtries = 4
-  end
+  url_is_essential = true
+  maxtries = 12
 
 
   if do_retry then
@@ -420,6 +476,16 @@ wget.callbacks.finish = function(start_time, end_time, wall_time, numurls, total
   end
 end
 
+wget.callbacks.write_to_warc = function(url, http_stat)
+  set_new_item(url["url"])
+  if string.match(url["url"], "^https?://dl%.bintray%.com/.*[^/]$")
+    and http_stat["statcode"] >= 300 and http_stat["statcode"] <= 399
+    and string.match(http_stat["newloc"], "https?://[a-z0-9]+%.cloudfront%.net") then
+    print_debug("Not writing to warc")
+    return false
+  end
+  return true
+  end
 
 wget.callbacks.before_exit = function(exit_status, exit_status_string)
   if abortgrab == true then
