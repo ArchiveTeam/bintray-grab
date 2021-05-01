@@ -230,7 +230,7 @@ project = Project(
     title = 'bintray',
     project_html = '''
     <img class="project-logo" alt="logo" src="https://wiki.archiveteam.org/images/Archiveteamsmall.png?959ea" height="50px"/>
-    <h2>Super Mario Maker Bookmarks <span class="links"><a href="https://supermariomakerbookmark.nintendo.net/">Website</a> &middot; <a href="http://tracker.archiveteam.org/super-mario-maker-bookmarks/">Leaderboard</a></span></h2>
+    <h2>Bintray <span class="links"><a href="https://bintray.com/">Website</a> &middot; <a href="http://tracker.archiveteam.org/bintray/">Leaderboard</a></span></h2>
     ''',)
 
 pipeline = Pipeline(

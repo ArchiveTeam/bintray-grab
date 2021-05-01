@@ -104,7 +104,7 @@ p_assert = function(v)
   end
 end
 
-do_debug = true
+do_debug = false
 print_debug = function(a)
     if do_debug then
         print(a)
@@ -112,6 +112,14 @@ print_debug = function(a)
 end
 print_debug("This grab script is running in debug mode. You should not see this in production.")
 
+local dl_or_custom = function(url)
+  if string.match(url, "^https?://dl%.bintray%.com/")
+          or string.match(url, "^https?://[^/]+%.bintray%.com/") and not string.match(url, "^https?://www+%.bintray%.com/") then
+    return true
+  else
+    return false
+  end
+end
 
 allowed = function(url, parenturl)
   assert(parenturl ~= nil)
@@ -124,7 +132,7 @@ allowed = function(url, parenturl)
   end
 
   -- Reject colon URLs on dl.
-  if string.match(url, "^https?://dl%.bintray%.com/.+/%:[^/]+/?$") then
+  if dl_or_custom(url) and string.match(url, "^https?://[^%/]%.bintray%.com/.+/%:[^/]+/?$") then
     --print_debug("Rejecting for colon " .. url)
     return false
   end
@@ -311,7 +319,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
   end
 
   -- Extract nothing from the files themselves on the download site
-  if current_item_type == "user" and string.match(url, "^https?://dl%.bintray%.com/.*[^/]$") then
+  if current_item_type == "user" and dl_or_custom(url) and string.match(url, "^https?://[^/]%.bintray%.com/.*[^/]$") then
     return {}
   end
 
@@ -321,7 +329,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     check("https://bintray.com/" .. current_item_value .. "/repositoriesTemplate", true)
     check("https://bintray.com/" .. current_item_value .. "/repositoriesTemplate?iterator=true", true)
 
-    if string.match(url, "^https?://dl%.bintray%.com/.*/$") then
+    if dl_or_custom(url) then
       load_html()
       -- Queue URLs without :
       print_debug("Queueing dl urls")
@@ -446,10 +454,12 @@ wget.callbacks.finish = function(start_time, end_time, wall_time, numurls, total
       print("Would have sent discovered item " .. item)
     end
   else
-    to_send = nil
+    local something = false
+    local to_send = nil
     for item, _ in pairs(discovered_items) do
-      if to_send == nil then
-        to_send = url
+      if not something then
+        to_send = item
+        something = true
       else
         to_send = to_send .. "\0" .. item
       end
@@ -477,9 +487,10 @@ end
 
 wget.callbacks.write_to_warc = function(url, http_stat)
   set_new_item(url["url"])
-  if string.match(url["url"], "^https?://dl%.bintray%.com/.*[^/]$")
+  if dl_or_custom(url["url"])
     and http_stat["statcode"] >= 300 and http_stat["statcode"] <= 399
-    and string.match(http_stat["newloc"], "https?://[a-z0-9]+%.cloudfront%.net") then
+    and (string.match(http_stat["newloc"], "https?://[a-z0-9]+%.cloudfront%.net/")
+  or string.match(http_stat["newloc"], "https?://akamai%.bintray%.com/")) then
     print_debug("Not writing to warc")
     return false
   end
