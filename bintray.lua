@@ -398,7 +398,7 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   -- file: items with params after the path
   local good_url = string.match(url["url"], "^(https?://[^/]+%.bintray%.com/[^?]+)%?.*expiry=16.*signature=")
   if status_code == 403 and good_url ~= nil then
-    discovered_items[good_url] = true
+    discovered_items["file:" .. good_url] = true
     return wget.actions.EXIT
   end
 
@@ -503,6 +503,7 @@ wget.callbacks.finish = function(start_time, end_time, wall_time, numurls, total
       else
         to_send = to_send .. "\0" .. item
       end
+      print("Queued " .. item)
     end
 
     if to_send ~= nil then

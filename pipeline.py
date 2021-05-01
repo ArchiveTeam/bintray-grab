@@ -54,7 +54,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20210501.12'
+VERSION = '20210501.13'
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 TRACKER_ID = 'bintray'
 TRACKER_HOST = 'legacy-api.arpa.li'
@@ -203,17 +203,22 @@ class WgetArgs(object):
             assert item_name not in {'user:account', 'user:assets'}, 'Doing this out of caution'
             wget_args.extend(['--warc-header', 'x-wget-at-project-item-name: '+item_name])
             wget_args.append('item-name://' + item_name)
-            item_type, item_value = item_name.split(':', 1)
-            if item_type == 'user':
-                wget_args.extend(['--warc-header', 'bintray-user: ' + item_value])
-                wget_args.append(f'https://bintray.com/{item_value}')
-                wget_args.append(f'https://bintray.com/{item_value}/')
-            elif item_type == 'file':
-                wget_args.extend(['--warc-header', 'bintray-file: ' + item_value])
-                assert item_value.startswith("http"), "If this fails, something strange has happened"
-                wget_args.append(item_value)
+            if item_name.startswith("http"):
+                wget_args.extend(['--warc-header', 'bintray-file-hack: ' + item_name])
+                assert not "?" in item_name, "Say in IRC if this triggers"
+                wget_args.append(item_name + "?expiry=1619896591447&signature=hC0rtVP5nyrbSJkj8OTC62Q%2FKESWeQH17LdtS%2BupwKTfgXWKgq0y6bQSB9iS0d2QXPkoBaqbggr%2B5L9tiP27MQ%3D")
             else:
-                raise ValueError('item_type not supported.')
+                item_type, item_value = item_name.split(':', 1)
+                if item_type == 'user':
+                    wget_args.extend(['--warc-header', 'bintray-user: ' + item_value])
+                    wget_args.append(f'https://bintray.com/{item_value}')
+                    wget_args.append(f'https://bintray.com/{item_value}/')
+                elif item_type == 'file':
+                    wget_args.extend(['--warc-header', 'bintray-file: ' + item_value])
+                    assert item_value.startswith("http"), "If this fails, something strange has happened"
+                    wget_args.append(item_value)
+                else:
+                    raise ValueError('item_type not supported.')
 
         if 'bind_address' in globals():
             wget_args.extend(['--bind-address', globals()['bind_address']])
