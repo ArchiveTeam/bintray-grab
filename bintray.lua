@@ -29,10 +29,18 @@ set_new_item = function(url)
   -- - Explicit set based on URL
   -- - Else nil (i.e. unknown or do not care)
 
+  print_debug("Trying to set new item on " .. url)
   -- Previous
   if url_sources[url] ~= nil then
     current_item_type = url_sources[url]["type"]
     current_item_value = url_sources[url]["value"]
+    print_debug("Setting current item to " .. current_item_type .. ":" .. current_item_value .. " based on sources table")
+    return
+  end
+  if url_sources[urlparse.unescape(url)] ~= nil then
+    current_item_type = url_sources[urlparse.unescape(url)]["type"]
+    current_item_value = url_sources[urlparse.unescape(url)]["value"]
+    print_debug("Used unescaped form to set item")
     print_debug("Setting current item to " .. current_item_type .. ":" .. current_item_value .. " based on sources table")
     return
   end
@@ -57,6 +65,9 @@ set_derived_url = function(dest)
   if url_sources[dest] == nil then
     print_debug("Derived " .. dest)
     url_sources[dest] = {type=current_item_type, value=current_item_value}
+    if urlparse.unescape(dest) ~= dest then
+      set_derived_url(urlparse.unescape(dest))
+    end
   else
     if url_sources[dest]["type"] ~= current_item_type
       or url_sources[dest]["value"] ~= current_item_value then
@@ -432,6 +443,13 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
 
   url_is_essential = true
   maxtries = 12
+
+  -- Broken screenshot on https://bintray.com/steppschuh/Markdown-Generator/Markdown-Generator/1.2.1
+  if string.match(url["url"], "^https?://bintray%-binary%-objects%-or%-production%.s3%-accelerate%.amazonaws%.com/")
+    and status_code == 403 then
+    url_is_essential = false
+    maxtries = 3
+  end
 
 
   if do_retry then
