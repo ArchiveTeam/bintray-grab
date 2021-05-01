@@ -347,7 +347,9 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
   end
   
 
-  if status_code == 200 and not (string.match(url, "jpe?g$") or string.match(url, "png$")) then
+  if status_code == 200 and not (string.match(url, "jpe?g$") or string.match(url, "png$"))
+    and not string.match(url, "https?://bintray%-binary%-objects%-or%-production%.s3%-accelerate%.amazonaws.com/[a-f0-9]+$")
+    and not string.match(url, "https?://secure%.gravatar%.com/avatar/") then
     load_html()
     for newurl in string.gmatch(string.gsub(html, "&quot;", '"'), '([^"]+)') do
       checknewurl(newurl)
