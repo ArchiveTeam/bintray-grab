@@ -142,6 +142,7 @@ allowed = function(url, parenturl)
     or string.match(url, "^https?://[^/]*%.?bintray%.com/.*/edit") -- Redirects to login
     or string.match(url, "^https?://[^/]*%.?bintray%.com/.*/%?versionPath=") -- TODO remove for production? Seems harmless besides taking time
     or string.match(url, "^https?://[^/]*%.?bintray%.com/login%?")
+    or string.match(url, "^https?://api%.bintray%.com/")
   then
     --print_debug("Rejected for other " .. url)
     return false
@@ -169,6 +170,9 @@ allowed = function(url, parenturl)
     end
     if user == nil then
       user = string.match(url, "^https?://[^/]+%.bintray%.com/package/[^/]+/([^/%?#]+)")
+    end
+    if user == nil then
+      user = string.match(url, "^https?://([^/]+)%.bintray%.com/")
     end
 
     if user == current_item_value then
@@ -378,7 +382,8 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
 
   if status_code >= 300 and status_code <= 399 then
     local newloc = urlparse.absolute(url["url"], http_stat["newloc"])
-    if string.match(newloc, "https?://[a-z0-9]+%.cloudfront%.net") then -- TODO file should pass
+    if string.match(newloc, "https?://[a-z0-9]+%.cloudfront%.net")
+            or string.match(newloc, "https?://akamai%.bintray%.com/") then -- TODO file should pass
       discovered_items["file:" .. url["url"]] = true
       return wget.actions.EXIT
     end
