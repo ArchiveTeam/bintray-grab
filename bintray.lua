@@ -382,7 +382,8 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
 
   if status_code >= 300 and status_code <= 399 then
     local newloc = urlparse.absolute(url["url"], http_stat["newloc"])
-    if string.match(newloc, "https?://[a-z0-9]+%.cloudfront%.net") then -- TODO file should pass
+    if string.match(newloc, "https?://[a-z0-9]+%.cloudfront%.net")
+            or string.match(newloc, "https?://akamai%.bintray%.com/") then -- TODO file should pass
       discovered_items["file:" .. url["url"]] = true
       return wget.actions.EXIT
     end
