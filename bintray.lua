@@ -1,6 +1,6 @@
 dofile("table_show.lua")
 dofile("urlcode.lua")
-dofile("strict.lua")
+--dofile("strict.lua")
 local urlparse = require("socket.url")
 local luasocket = require("socket") -- Used to get sub-second time
 local http = require("socket.http")
