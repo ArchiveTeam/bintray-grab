@@ -142,6 +142,7 @@ allowed = function(url, parenturl)
     or string.match(url, "^https?://[^/]*%.?bintray%.com/.*/edit") -- Redirects to login
     or string.match(url, "^https?://[^/]*%.?bintray%.com/.*/%?versionPath=") -- TODO remove for production? Seems harmless besides taking time
     or string.match(url, "^https?://[^/]*%.?bintray%.com/login%?")
+    or string.match(url, "^https?://api%.bintray%.com/")
   then
     --print_debug("Rejected for other " .. url)
     return false
