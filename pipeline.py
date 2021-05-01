@@ -54,7 +54,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20210501.08'
+VERSION = '20210501.09'
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 TRACKER_ID = 'bintray'
 TRACKER_HOST = 'legacy-api.arpa.li'
@@ -207,8 +207,10 @@ class WgetArgs(object):
                 wget_args.extend(['--warc-header', 'bintray-user: ' + item_value])
                 wget_args.append(f'https://bintray.com/{item_value}')
                 wget_args.append(f'https://bintray.com/{item_value}/')
-            elif item_type == 'url':
-                raise Exception("Encountered a file: item. Maybe it's safe to remove from item_name? Ask arkiver?")
+            elif item_type == 'file':
+                wget_args.extend(['--warc-header', 'bintray-file: ' + item_value])
+                assert item_value.startswith("http"), "If this fails, something strange has happened"
+                wget_args.append(item_value)
             else:
                 raise ValueError('item_type not supported.')
 

@@ -48,9 +48,9 @@ set_new_item = function(url)
   end
 
   -- Else
-  print_debug("Current item fell through")
-  current_item_value = nil
-  current_item_type = nil
+  assert(string.match(url, "^https?://[^/]+%.bintray%.com/"), "file: type must by on subdomain of targeted")
+  current_item_type = "file"
+  current_item_value = url
 end
 
 set_derived_url = function(dest)
@@ -323,7 +323,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
   end
 
   -- Extract nothing from the files themselves on the download site
-  if current_item_type == "user" and dl_or_custom(url) and string.match(url, "^https?://[^/]+%.bintray%.com/.*[^/]$") then
+  if (current_item_type == "user") and dl_or_custom(url) and string.match(url, "^https?://[^/]+%.bintray%.com/.*[^/]$") then
     return {}
   end
 
@@ -349,7 +349,8 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
 
   if status_code == 200 and not (string.match(url, "jpe?g$") or string.match(url, "png$"))
     and not string.match(url, "https?://bintray%-binary%-objects%-or%-production%.s3%-accelerate%.amazonaws.com/[a-f0-9]+$")
-    and not string.match(url, "https?://secure%.gravatar%.com/avatar/") then
+    and not string.match(url, "https?://secure%.gravatar%.com/avatar/")
+    and not (current_item_type == "file") then
     load_html()
     for newurl in string.gmatch(string.gsub(html, "&quot;", '"'), '([^"]+)') do
       checknewurl(newurl)
@@ -385,9 +386,14 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   if status_code >= 300 and status_code <= 399 then
     local newloc = urlparse.absolute(url["url"], http_stat["newloc"])
     if string.match(newloc, "https?://[a-z0-9]+%.cloudfront%.net")
-            or string.match(newloc, "https?://akamai%.bintray%.com/") then -- TODO file should pass
-      discovered_items["file:" .. url["url"]] = true
-      return wget.actions.EXIT
+            or string.match(newloc, "https?://akamai%.bintray%.com/") then
+      if current_item_type == "user" then
+        discovered_items["file:" .. url["url"]] = true
+        return wget.actions.EXIT
+      elseif current_item_type == "file" then -- Bad doing this here instead of allowed(), but too much restructuring to do that
+        set_derived_url(newloc)
+        return wget.actions.NOTHING
+      end
     end
     if downloaded[newloc] == true or addedtolist[newloc] == true
             or not allowed(newloc, url["url"]) then
@@ -494,7 +500,8 @@ end
 
 wget.callbacks.write_to_warc = function(url, http_stat)
   set_new_item(url["url"])
-  if dl_or_custom(url["url"])
+  if (current_item_type == "user")
+    and dl_or_custom(url["url"])
     and http_stat["statcode"] >= 300 and http_stat["statcode"] <= 399
     and (string.match(http_stat["newloc"], "https?://[a-z0-9]+%.cloudfront%.net/")
   or string.match(http_stat["newloc"], "https?://akamai%.bintray%.com/")) then

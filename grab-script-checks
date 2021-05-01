@@ -3,7 +3,30 @@ format 0
 [[]]
 successful
 not regex .*view-source:.*
-not regex .{300,} # Huge URLs, incl. big JS libraries
+#not regex .{700,} # Huge URLs, incl. big JS libraries
+
+#####################################################
+# file:
+
+[[file:]]
+minrequests 2
+maxrequests 2
+some regex https://[^/]+\.bintray\.com/.*[^/]
+
+[file:https://google.bintray.com/apigee/apigee/nginx/latest/sha256__e83729dd399a6091566a1c24b1d8543a7b34ce4a0c4896ab91fb55d1e68a90e1]
+some exact https://google.bintray.com/apigee/apigee/nginx/latest/sha256__e83729dd399a6091566a1c24b1d8543a7b34ce4a0c4896ab91fb55d1e68a90e1
+some regex https://akamai.bintray.com/.*
+
+[file:https://dl.bintray.com/wangzw/deb/dists/trusty/contrib/binary-amd64/libhdfs3-dev_2.2.31-1_amd64.deb]
+some exact https://dl.bintray.com/wangzw/deb/dists/trusty/contrib/binary-amd64/libhdfs3-dev_2.2.31-1_amd64.deb
+some regex https://d29vzk4ow07wi7\.cloudfront\.net/.*
+
+[file:https://dl.bintray.com/jfrog/jfrog-jars/postgresql/postgresql/10.13/postgresql-10.13-linux-slim-x64-binaries.tar.gz]
+some exact https://dl.bintray.com/jfrog/jfrog-jars/postgresql/postgresql/10.13/postgresql-10.13-linux-slim-x64-binaries.tar.gz
+some regex https://akamai\.bintray\.com/.*
+
+
+
 
 ######################################################
 # user:
@@ -32,6 +55,11 @@ some exact https://bintray.com/wangzw/repositoriesJSON
 some exact https://dl.bintray.com/wangzw/deb/
 some exact https://dl.bintray.com/wangzw/deb/dists/
 some exact https://dl.bintray.com/wangzw/deb/dists/trusty/contrib/binary-i386/
+
+
+
+[user:ociubotaru]
+not regex y%bb%89
 
 
 
