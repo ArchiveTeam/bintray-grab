@@ -149,6 +149,18 @@ allowed = function(url, parenturl)
   end
 
 
+  local tested = {}
+  for s in string.gmatch(url, "([^/]+)") do
+    if tested[s] == nil then
+      tested[s] = 0
+    end
+    if tested[s] == 6 then
+      return false
+    end
+    tested[s] = tested[s] + 1
+  end
+
+
 
   if (string.match(url, "^https?://[^/]+%.bintray%.com/") or string.match(url, "^https?://bintray%.com/"))
           and current_item_type == "user" then
@@ -196,16 +208,6 @@ allowed = function(url, parenturl)
 
   -- TODO to prevent user:account, make sure general comes before backfeed intake
 
-  local tested = {}
-  for s in string.gmatch(url, "([^/]+)") do
-    if tested[s] == nil then
-      tested[s] = 0
-    end
-    if tested[s] == 6 then
-      return false
-    end
-    tested[s] = tested[s] + 1
-  end
 
     if string.match(url, "^https?://[^/]+%.bintray%.com/")
             or string.match(url, "^https?://bintray%.com/")
