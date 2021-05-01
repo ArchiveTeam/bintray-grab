@@ -180,6 +180,7 @@ class WgetArgs(object):
             '-e', 'robots=off',
             '--rotate-dns',
             '--recursive', '--level=inf',
+            '--no-iri',
             '--no-parent',
             '--page-requisites',
             '--timeout', '30',
