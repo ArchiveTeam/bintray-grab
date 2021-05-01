@@ -54,7 +54,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20210501.01'
+VERSION = '20210501.02'
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 TRACKER_ID = 'bintray'
 TRACKER_HOST = 'legacy-api.arpa.li'
@@ -230,7 +230,7 @@ project = Project(
     title = 'bintray',
     project_html = '''
     <img class="project-logo" alt="logo" src="https://wiki.archiveteam.org/images/Archiveteamsmall.png?959ea" height="50px"/>
-    <h2>Super Mario Maker Bookmarks <span class="links"><a href="https://supermariomakerbookmark.nintendo.net/">Website</a> &middot; <a href="http://tracker.archiveteam.org/super-mario-maker-bookmarks/">Leaderboard</a></span></h2>
+    <h2>Bintray <span class="links"><a href="https://bintray.com/">Website</a> &middot; <a href="http://tracker.archiveteam.org/bintray/">Leaderboard</a></span></h2>
     ''',)
 
 pipeline = Pipeline(
