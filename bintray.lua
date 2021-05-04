@@ -55,7 +55,7 @@ set_new_item = function(url, urlstruct)
     return
   end
   if string.match(url, "^https?://[a-z0-9]+%.cloudfront%.net")
-    or string.match(url, "https?://^akamai%.bintray%.com/") then
+    or string.match(url, "^https?://akamai%.bintray%.com/") then
     current_item_type = "cdn"
     current_item_value = url
     return
@@ -126,7 +126,7 @@ p_assert = function(v)
   end
 end
 
-do_debug = false
+do_debug = true
 print_debug = function(a)
     if do_debug then
         print(a)
@@ -554,7 +554,8 @@ wget.callbacks.finish = function(start_time, end_time, wall_time, numurls, total
       local tries = 0
       while tries < 10 do
         local body, code, headers, status = http.request(
-          "http://blackbird.arpa.li:23038/bintray-ht5yr7vqo86txod/",
+          --"http://blackbird.arpa.li:23038/bintray-ht5yr7vqo86txod/",
+                "https://example.com/",
           to_send
         )
         if code == 200 or code == 409 then
@@ -572,6 +573,7 @@ end
 
 wget.callbacks.write_to_warc = function(url, http_stat)
   set_new_item(url["url"], url)
+  print_debug("item_type is now " .. current_item_type)
   if (current_item_type == "user")
     and dl_or_custom(url["url"])
     and http_stat["statcode"] >= 300 and http_stat["statcode"] <= 399

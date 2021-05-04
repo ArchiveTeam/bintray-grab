@@ -40,6 +40,11 @@ maxrequests 1
 some discoveredregex fileretry:https://dl\.bintray\.com/bintray/rpm-center/collectd-5\.4\.1-1\.el5\.x86_64\.rpm.2 # As before, the last . should be a #
 
 
+# Akamai
+[cdn:642.108.0.https://akamai.bintray.com/09/09056a6508cf8d17bb9bf326971f4881eab6ac3b53c8a662b7b697d746027064?__gda__=exp=1620140900~hmac=4734a92addf96ada8a46ecb6708c63dda0ed8f47321a5aa289410747eb17c1a5&response-content-disposition=attachment%3Bfilename%3D%22kotlinx-html-jvm-0.6.10.jar%22&response-content-type=application%2Foctet-stream&requestInfo=U2FsdGVkX1-c9Z8favbkmm6IuHOum_d4UzHZ9cCetEBWXn5yqTeRvpwZl2UkfeXZxZhkdgacgYQ2g2xTuD_Fv4-MlhFlfjljze-UF9WE23K2U-oDaVJCALo8CisU3Tqw86uwe_Uncsvg2d79m8QCuA&response-X-Checksum-Sha1=adfa3b599d9863ee2d2382ae93abb5621244e8c1&response-X-Checksum-Sha2=09056a6508cf8d17bb9bf326971f4881eab6ac3b53c8a662b7b697d746027064https://kotlin.bintray.com/kotlinx/org/jetbrains/kotlinx/kotlinx-html-jvm/0.6.10/kotlinx-html-jvm-0.6.10.jar]
+maxrequests 1
+some discoveredregex fileretry:https://kotlin\.bintray\.com/kotlinx/org/jetbrains.*kotlinx-html-jvm-0\.6\.10.jar.1
+
 ################################################
 # file
 
