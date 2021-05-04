@@ -165,7 +165,7 @@ allowed = function(url, parenturl)
     end
 
     if not string.match(url, "^https?://[^%/]+%.bintray%.com/.+/%:[^/]+/?$") then
-      discovered_items["file:" + url] = true
+      discovered_items["file:" .. url] = true
     end
     return false
   end
@@ -351,7 +351,7 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   local url_is_essential = false
 
   -- Whitelist instead of blacklist status codes
-  if status_code ~= 200 and status_code ~= 404 and not (status_code >= 300 and status_code <= 399) then
+  if status_code ~= 200 and status_code ~= 404 and status_code ~= 400 and not (status_code >= 300 and status_code <= 399) then
     io.stdout:write("Server returned " .. http_stat.statcode .. " (" .. err .. "). Sleeping.\n")
     io.stdout:flush()
     do_retry = true
