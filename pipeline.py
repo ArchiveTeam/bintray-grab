@@ -204,8 +204,7 @@ class WgetArgs(object):
             wget_args.append('item-name://' + item_name)
             if item_name.startswith("http"):
                 wget_args.extend(['--warc-header', 'bintray-file-hack: ' + item_name])
-                assert not "?" in item_name, "Say in IRC if this triggers"
-                wget_args.append(item_name + "?expiry=1619896591447&signature=hC0rtVP5nyrbSJkj8OTC62Q%2FKESWeQH17LdtS%2BupwKTfgXWKgq0y6bQSB9iS0d2QXPkoBaqbggr%2B5L9tiP27MQ%3D")
+                wget_args.append(item_name.split("?", 1)[0] + "?expiry=1619896591447&signature=hC0rtVP5nyrbSJkj8OTC62Q%2FKESWeQH17LdtS%2BupwKTfgXWKgq0y6bQSB9iS0d2QXPkoBaqbggr%2B5L9tiP27MQ%3D")
             else:
                 item_type, item_value = item_name.split(':', 1)
                 if item_type == 'user':

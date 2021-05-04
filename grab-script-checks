@@ -10,6 +10,8 @@ not regex .*view-source:.*
 [https://dl.bintray.com/urunky/nuget]
 some discovered file:https://dl.bintray.com/urunky/nuget
 
+[https://dl.bintray.com/urunky/nuget?khjewfjewhfkf]
+some discovered file:https://dl.bintray.com/urunky/nuget
 
 
 ################################################
