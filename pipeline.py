@@ -54,7 +54,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20210501.13'
+VERSION = '20210504.01'
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 TRACKER_ID = 'bintray'
 TRACKER_HOST = 'legacy-api.arpa.li'
@@ -139,7 +139,6 @@ class MoveFiles(SimpleTask):
 
         shutil.rmtree('%(item_dir)s' % item)
 
-
 def get_hash(filename):
     with open(filename, 'rb') as in_file:
         return hashlib.sha1(in_file.read()).hexdigest()
@@ -216,7 +215,39 @@ class WgetArgs(object):
                 elif item_type == 'file':
                     wget_args.extend(['--warc-header', 'bintray-file: ' + item_value])
                     assert item_value.startswith("http"), "If this fails, something strange has happened"
+                    wget_args.append(item_value.split("#", 1)[0]) # Strip off fragment to not confuse w/ fileretry
+                elif item_type == 'cdn':
+                    # Format: cdn:len.len.serial.[urls]
+                    wget_args.extend(['--warc-header', 'bintray-cdn: ' + item_value])
+                    [len1, len2, serial, addr] = item_value.split('.', 3)
+                    assert int(len1) + int(len2) == len(addr)
+                    url_to_do = addr[0:int(len1)]
+                    url_to_do = url_to_do.split("#", 1)[0] # Remove fragment
+                    orig_url = addr[int(len1):int(len1) + int(len2)]
+                    wget_args.append(url_to_do + "#" + serial + "#" + orig_url)
+                    wget_args.remove("--page-requisites") # Gets rid of fragment when present for some reason
+                    wget_args.remove("--no-check-certificate")
+                    wget_args.remove("--recursive")
+                    wget_args.remove("--level=inf")
+
+                    wget_args.remove("--lua-script")
+                    wget_args.remove("bintray.lua")
+                    wget_args.extend(["--lua-script", "bintray_noge.lua"])
+                    assert len(item_names) == 1
+                    #print("WGE is " + wget_args[-1])
+                elif item_type == 'fileretry':
+                    # Format: fileretry:url#serial (serial in fragment)
+                    wget_args.extend(['--warc-header', 'bintray-fileretry: ' + item_value])
                     wget_args.append(item_value)
+                    wget_args.remove("--page-requisites")
+                    wget_args.remove("--no-check-certificate")
+                    wget_args.remove("--recursive")
+                    wget_args.remove("--level=inf")
+
+                    wget_args.remove("--lua-script")
+                    wget_args.remove("bintray.lua")
+                    wget_args.extend(["--lua-script", "bintray_noge.lua"])
+                    assert len(item_names) == 1
                 else:
                     raise ValueError('item_type not supported.')
 
