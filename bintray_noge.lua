@@ -165,7 +165,7 @@ allowed = function(url, parenturl)
     end
 
     if not string.match(url, "^https?://[^%/]+%.bintray%.com/.+/%:[^/]+/?$") then
-      discovered_items[url] = true
+      discovered_items["file:" + url] = true
     end
     return false
   end

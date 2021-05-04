@@ -6,6 +6,13 @@ not regex .*view-source:.*
 #not regex .{700,} # Huge URLs, incl. big JS libraries
 
 ################################################
+# mistake
+[https://dl.bintray.com/urunky/nuget]
+some discovered file:https://dl.bintray.com/urunky/nuget
+
+
+
+################################################
 # fileretry
 
 # You must manually generate and test a good entry yourself
