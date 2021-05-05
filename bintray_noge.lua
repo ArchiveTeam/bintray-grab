@@ -126,7 +126,7 @@ p_assert = function(v)
   end
 end
 
-do_debug = true
+do_debug = false
 print_debug = function(a)
     if do_debug then
         print(a)
@@ -423,8 +423,7 @@ wget.callbacks.finish = function(start_time, end_time, wall_time, numurls, total
       local tries = 0
       while tries < 10 do
         local body, code, headers, status = http.request(
-          --"http://blackbird.arpa.li:23038/bintray-ht5yr7vqo86txod/",
-                "https://example.com/",
+          "http://blackbird.arpa.li:23038/bintray-ht5yr7vqo86txod/",
           to_send
         )
         if code == 200 or code == 409 then
