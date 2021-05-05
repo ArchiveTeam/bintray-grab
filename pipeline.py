@@ -37,7 +37,7 @@ if StrictVersion(seesaw.__version__) < StrictVersion('0.8.5'):
 WGET_AT = find_executable(
     'Wget+AT',
     [
-        'GNU Wget 1.20.3-at.20210410.01'
+        'GNU Wget 1.20.3-at.20210504.01'
     ],
     [
         './wget-at',
@@ -54,7 +54,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20210504.04'
+VERSION = '20210505.01'
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 TRACKER_ID = 'bintray'
 TRACKER_HOST = 'legacy-api.arpa.li'
