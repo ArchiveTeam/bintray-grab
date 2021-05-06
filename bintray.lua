@@ -476,10 +476,10 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
 
   --
 
-  
+
   local do_retry = false
-  local maxtries = 12
-  local url_is_essential = false
+  local maxtries = 10
+  local url_is_essential = true
 
   -- Whitelist instead of blacklist status codes
   if status_code ~= 200 and status_code ~= 404 and status_code ~= 400 and not (status_code >= 300 and status_code <= 399) then
@@ -488,8 +488,6 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
     do_retry = true
   end
 
-  url_is_essential = true
-  maxtries = 12
 
   -- Broken screenshot on https://bintray.com/steppschuh/Markdown-Generator/Markdown-Generator/1.2.1
   if string.match(url["url"], "^https?://bintray%-binary%-objects%-or%-production%.s3%-accelerate%.amazonaws%.com/")
@@ -498,8 +496,22 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
     maxtries = 3
   end
 
+  -- Non-transient 500 on https://bintray.com/sandec/repo/download_file?file_path=com/sandec/jpro/jpro-java11_2.12/2021.1.0-PREVIEW2/jpro-java11_2.12-2021.1.0-PREVIEW2.jar
+  if (current_item_type == "user")
+    and string.match(url["url"], "^https://bintray%.com/" .. current_item_value .. "/repo/download_file")
+    and status_code == 500 then
+    url_is_essential = false
+    maxtries = 5
+  end
+
   if current_item_type == "file" and status_code == 403 then
     maxtries = 1
+  end
+
+  -- https://dl.bintray.com/jfrog-int/open-docker/artifactory-pro/openshift/5.3.0.ha/sha256__c933b00c3409456aa2f4e5bdc78603b119c06d1d9c900ebff0ab8f6a2f4470b8
+  if current_item_type == "file" and status_code == 401 then
+    maxtries = 5
+    url_is_essential = false
   end
 
 

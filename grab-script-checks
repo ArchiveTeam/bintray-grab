@@ -30,12 +30,12 @@ some exact https://dl.bintray.com/bintray/rpm-center/collectd-5.4.1-1.el5.x86_64
 # You must manually generate and test a good entry yourself
 
 # Retrying from 0 to 1
-[cdn:965.73.0.https://d29vzk4ow07wi7.cloudfront.net/d641f83c81ccc792d120b4aba3006da011ec18a3?response-content-disposition=attachment%3Bfilename%3D%22collectd-5.4.1-1.el5.x86_64.rpm%22&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHAqOi8vZDI5dnprNG93MDd3aTcuY2xvdWRmcm9udC5uZXQvZDY0MWY4M2M4MWNjYzc5MmQxMjBiNGFiYTMwMDZkYTAxMWVjMThhMz9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWF0dGFjaG1lbnQlM0JmaWxlbmFtZSUzRCUyMmNvbGxlY3RkLTUuNC4xLTEuZWw1Lng4Nl82NC5ycG0lMjIiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE2MjAxMTUwNzB9LCJJcEFkZHJlc3MiOnsiQVdTOlNvdXJjZUlwIjoiMC4wLjAuMC8wIn19fV19&Signature=Cjxaxr4R-lrWb-qvu1M8fFhQn5KWlGzn2mRgnk~JCnMBO8SjXXexgQYOP46na7CRldm3HilJrOjY7sBzKB7ImurSWNiEQZGiYcssxTUB5TrulNldiYDvFlYP14LNj2vJmwefhadXdluT3Sdgr9S7YzuTe6uHmNO3tIqsVa3mcvAusfgEKwzsUanivkYea2OMvh3TqsBHAZsI1dD9RyELcWihdA~-NlF4w5HfmMxLWgvZs9ScKb3weJ5NWtIJuUpAMsztSz9HLYXRV~UOVU6ItIiWd6KjhE0LVEISTHeEk7a8fbSFowFnJ86yO~hWXYBnkL4CKZufTkPMpN5z2MRx8A__&Key-Pair-Id=APKAIFKFWOMXM2UMTSFAhttps://dl.bintray.com/bintray/rpm-center/collectd-5.4.1-1.el5.x86_64.rpm']
+[cdn:965.73.0.https://d29vzk4ow07wi7.cloudfront.net/d641f83c81ccc792d120b4aba3006da011ec18a3?response-content-disposition=attachment%3Bfilename%3D%22collectd-5.4.1-1.el5.x86_64.rpm%22&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHAqOi8vZDI5dnprNG93MDd3aTcuY2xvdWRmcm9udC5uZXQvZDY0MWY4M2M4MWNjYzc5MmQxMjBiNGFiYTMwMDZkYTAxMWVjMThhMz9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWF0dGFjaG1lbnQlM0JmaWxlbmFtZSUzRCUyMmNvbGxlY3RkLTUuNC4xLTEuZWw1Lng4Nl82NC5ycG0lQjIiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE2MjAyODczNTN9LCJJcEFkZHJlc3MiOnsiQVdTOlNvdXJjZUlwIjoiMC4wLjAuMC8wIn19fV19&Signature=KBF~5jm9pTHSmoHPBpTHtnkr5RGXaEfE1gP433OeC1zt1LgDj1NeinUvzLfjsumXKVsUAfJAW5qvbfPlRTGP4DE2Ifd1qAVgEyj3jVZX0rx~NBv6blUj~KzYIGQ9046q4~vlcYOLqkuA2pRE8WJCmjvol9Cr-ZdP3HyHEcr5pl6iWXsK04T-9ej1FFWrnmXBkTQ6z2SrTgkZEtNzXK8GNS-o7mbVtibZ73Og6lpfcTahnebJ9StkTV3NH2QsGvhI7aIpM3RwzCmCE9ssT15g7ZrCITOplWv2N0C0mxe9AUwrGkOlVuYJdf9sEZShE2Gh4OIOZgTOm0DlDGmZI2XlGw__&Key-Pair-Id=APKAIFKFWOMXM2UMTSFAhttps://dl.bintray.com/bintray/rpm-center/collectd-5.4.1-1.el5.x86_64.rpm]
 maxrequests 1
 some discoveredregex fileretry:https://dl\.bintray\.com/bintray/rpm-center/collectd-5\.4\.1-1\.el5\.x86_64\.rpm.1 # shlex bug(?). Final char is #
 
 # Retrying from 1 to 2
-[cdn:965.73.1.https://d29vzk4ow07wi7.cloudfront.net/d641f83c81ccc792d120b4aba3006da011ec18a3?response-content-disposition=attachment%3Bfilename%3D%22collectd-5.4.1-1.el5.x86_64.rpm%22&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHAqOi8vZDI5dnprNG93MDd3aTcuY2xvdWRmcm9udC5uZXQvZDY0MWY4M2M4MWNjYzc5MmQxMjBiNGFiYTMwMDZkYTAxMWVjMThhMz9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWF0dGFjaG1lbnQlM0JmaWxlbmFtZSUzRCUyMmNvbGxlY3RkLTUuNC4xLTEuZWw1Lng4Nl82NC5ycG0lMjIiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE2MjAxMTUwNzB9LCJJcEFkZHJlc3MiOnsiQVdTOlNvdXJjZUlwIjoiMC4wLjAuMC8wIn19fV19&Signature=Cjxaxr4R-lrWb-qvu1M8fFhQn5KWlGzn2mRgnk~JCnMBO8SjXXexgQYOP46na7CRldm3HilJrOjY7sBzKB7ImurSWNiEQZGiYcssxTUB5TrulNldiYDvFlYP14LNj2vJmwefhadXdluT3Sdgr9S7YzuTe6uHmNO3tIqsVa3mcvAusfgEKwzsUanivkYea2OMvh3TqsBHAZsI1dD9RyELcWihdA~-NlF4w5HfmMxLWgvZs9ScKb3weJ5NWtIJuUpAMsztSz9HLYXRV~UOVU6ItIiWd6KjhE0LVEISTHeEk7a8fbSFowFnJ86yO~hWXYBnkL4CKZufTkPMpN5z2MRx8A__&Key-Pair-Id=APKAIFKFWOMXM2UMTSFAhttps://dl.bintray.com/bintray/rpm-center/collectd-5.4.1-1.el5.x86_64.rpm']
+[cdn:965.73.1.https://d29vzk4ow07wi7.cloudfront.net/d641f83c81ccc792d120b4aba3006da011ec18a3?response-content-disposition=attachment%3Bfilename%3D%22collectd-5.4.1-1.el5.x86_64.rpm%22&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHAqOi8vZDI5dnprNG93MDd3aTcuY2xvdWRmcm9udC5uZXQvZDY0MWY4M2M4MWNjYzc5MmQxMjBiNGFiYTMwMDZkYTAxMWVjMThhMz9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWF0dGFjaG1lbnQlM0JmaWxlbmFtZSUzRCUyMmNvbGxlY3RkLTUuNC4xLTEuZWw1Lng4Nl82NC5ycG0lMjIiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE2MjAxMTUwNzB9LCJJcEFkZHJlc3MiOnsiQVdTOlNvdXJjZUlwIjoiMC4wLjAuMC8wIn19fV19&Signature=Cjxaxr4R-lrWb-qvu1M8fFhQn5KWlGzn2mRgnk~JCnMBO8SjXXexgQYOP46na7CRldm3HilJrOjY7sBzKB7ImurSWNiEQZGiYcssxTUB5TrulNldiYDvFlYP14LNj2vJmwefhadXdluT3Sdgr9S7YzuTe6uHmNO3tIqsVa3mcvAusfgEKwzsUanivkYea2OMvh3TqsBHAZsI1dD9RyELcWihdA~-NlF4w5HfmMxLWgvZs9ScKb3weJ5NWtIJuUpAMsztSz9HLYXRV~UOVU6ItIiWd6KjhE0LVEISTHeEk7a8fbSFowFnJ86yO~hWXYBnkL4CKZufTkPMpN5z2MRx8A__&Key-Pair-Id=APKAIFKFWOMXM2UMTSFAhttps://dl.bintray.com/bintray/rpm-center/collectd-5.4.1-1.el5.x86_64.rpm]
 maxrequests 1
 some discoveredregex fileretry:https://dl\.bintray\.com/bintray/rpm-center/collectd-5\.4\.1-1\.el5\.x86_64\.rpm.2 # As before, the last . should be a #
 
@@ -80,7 +80,7 @@ some exact https://bintray.com/yipdw
 some exact https://bintray.com/yipdw/
 some exact https://bintray.com/yipdw/maven
 some exact https://bintray.com/yipdw/rpm
-some exact https://bintray.com/yipdw/generic
+#some exact https://bintray.com/yipdw/generic
 some exact https://bintray.com/yipdw/registry
 some exact https://bintray.com/yipdw/repositoriesJSON
 some exact https://bintray.com/user/subjectNotificationsJson?username=yipdw
@@ -95,8 +95,10 @@ maxrequests 50
 some exact https://secure.gravatar.com/avatar/9d6bbf939f289075366b47ac547a7d0e?s=140&d=mp
 some exact https://bintray.com/wangzw
 some exact https://bintray.com/wangzw/repositoriesJSON
+some exact https://bintray.com/wangzw/rpm/libhdfs3
 
-some discovered https://dl.bintray.com/wangzw/generic
+
+some discovered file:https://dl.bintray.com/wangzw/rpm
 
 
 [user:ociubotaru]
