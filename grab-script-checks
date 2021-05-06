@@ -96,10 +96,13 @@ some exact https://secure.gravatar.com/avatar/9d6bbf939f289075366b47ac547a7d0e?s
 some exact https://bintray.com/wangzw
 some exact https://bintray.com/wangzw/repositoriesJSON
 some exact https://bintray.com/wangzw/rpm/libhdfs3
-
-
 some discovered file:https://dl.bintray.com/wangzw/rpm
 
 
 [user:ociubotaru]
 not regex y%bb%89
+
+
+[user:kpangy]
+some exact https://bintray.com/kpangy/JibeTest/Jibe/1.0.4/
+some discovered file:https://dl.bintray.com/kpangy/npm

@@ -366,8 +366,9 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   end
 
   -- Non-transient 500 on https://bintray.com/sandec/repo/download_file?file_path=com/sandec/jpro/jpro-java11_2.12/2021.1.0-PREVIEW2/jpro-java11_2.12-2021.1.0-PREVIEW2.jar
+  -- Also https://bintray.com/kpangy/JibeTest/download_file?file_path=com%2Fjibestream%2Fsomelibrary%2Fsomelibrary%2Fmaven-metadata.xml
   if (current_item_type == "user")
-    and string.match(url["url"], "^https://bintray%.com/" .. current_item_value .. "/repo/download_file")
+    and string.match(url["url"], "^https://bintray%.com/" .. current_item_value .. ".*/download_file%?")
     and status_code == 500 then
     url_is_essential = false
     maxtries = 5
