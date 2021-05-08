@@ -515,6 +515,10 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
     url_is_essential = false
   end
 
+    if current_item_type == "user" then
+        url_is_essential = false
+    end
+
 
   if do_retry then
     if tries >= maxtries then

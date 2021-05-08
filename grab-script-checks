@@ -78,7 +78,7 @@ not regex https?://[^/]\.bintray\.com/.*
 [user:yipdw]
 some exact https://bintray.com/yipdw
 some exact https://bintray.com/yipdw/
-some exact https://bintray.com/yipdw/maven
+#some exact https://bintray.com/yipdw/maven
 some exact https://bintray.com/yipdw/rpm
 #some exact https://bintray.com/yipdw/generic
 some exact https://bintray.com/yipdw/registry
