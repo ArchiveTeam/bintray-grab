@@ -54,7 +54,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20210508.01'
+VERSION = '20210515.01'
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 TRACKER_ID = 'bintray'
 TRACKER_HOST = 'legacy-api.arpa.li'
@@ -199,7 +199,6 @@ class WgetArgs(object):
 
         item_names_to_submit = item_names.copy()
         for item_name in item_names:
-            assert item_name not in {'user:account', 'user:assets'}, 'Doing this out of caution'
             wget_args.extend(['--warc-header', 'x-wget-at-project-item-name: '+item_name])
             wget_args.append('item-name://' + item_name)
             if item_name.startswith("http"):
